@@ -1,0 +1,309 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEON CORE // NZXT</title>
+<style>
+:root {
+  --cyan: #00f5ff;
+  --pink: #ff36ce;
+  --bg: #050911;
+  --panel: #0a1420;
+  --muted: #6b879a;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; width: 100%; height: 100%;
+  background: var(--bg); color: #e8fbff;
+  font-family: "Arial", sans-serif;
+}
+body {
+  display: grid; place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 40%, #102435 0%, #050911 70%);
+}
+#screen {
+  width: min(100vw, 100vh);
+  aspect-ratio: 1;
+  position: relative; overflow: hidden;
+  padding: 6.5%;
+  display: flex; flex-direction: column;
+  justify-content: space-between;
+  isolation: isolate;
+}
+#screen::before {
+  content: ""; position: absolute; inset: 2%;
+  border: 1px solid #00f5ff48;
+  border-radius: 50%;
+  box-shadow: inset 0 0 28px #00eaff0b, 0 0 22px #00eaff0b;
+  pointer-events: none; z-index: -1;
+}
+#screen::after {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: repeating-linear-gradient(
+    0deg, transparent 0px, transparent 4px,
+    #00e5ff07 5px
+  );
+  pointer-events: none;
+}
+header, footer {
+  display: flex; justify-content: space-between;
+  align-items: center; gap: 8px;
+}
+.brand {
+  font-size: clamp(10px, 3.4vw, 20px);
+  font-weight: 900; letter-spacing: .13em;
+}
+.brand span { color: var(--cyan); }
+.tiny {
+  color: var(--muted); font-size: clamp(6px, 1.8vw, 10px);
+  letter-spacing: .12em;
+}
+.status { color: var(--cyan); }
+.core {
+  display: grid; place-items: center;
+  position: relative; flex: 1; min-height: 0;
+}
+.orbit {
+  width: 69%; aspect-ratio: 1; border-radius: 50%;
+  border: 1px solid #00e5ff50; position: absolute;
+  animation: rotate 22s linear infinite;
+}
+.orbit::before, .orbit::after {
+  content: ""; position: absolute;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--cyan); box-shadow: 0 0 12px var(--cyan);
+}
+.orbit::before { top: 12%; left: 12%; }
+.orbit::after { bottom: 12%; right: 12%; background: var(--pink); }
+.orbit.two {
+  width: 81%; border-style: dashed;
+  border-color: #ff36ce45;
+  animation-direction: reverse; animation-duration: 35s;
+}
+.orbit.two::before, .orbit.two::after { display: none; }
+.center {
+  width: 53%; aspect-ratio: 1; border-radius: 50%;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  background: radial-gradient(circle, #102b3a 0%, #07101b 72%);
+  border: 2px solid #00e5ff72;
+  box-shadow: 0 0 25px #00e5ff19, inset 0 0 24px #00e5ff12;
+  position: relative;
+}
+.center::before {
+  content: ""; position: absolute; inset: 5%;
+  border: 1px dashed #00f5ff42; border-radius: 50%;
+}
+.eyebrow {
+  color: var(--cyan); font-size: clamp(6px, 1.8vw, 10px);
+  letter-spacing: .17em;
+}
+.big {
+  font-size: clamp(24px, 8vw, 48px);
+  line-height: 1.2; font-weight: 300;
+}
+.unit { font-size: .42em; color: var(--cyan); }
+.readings {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 7px; margin: 0 1%;
+}
+.tile {
+  background: linear-gradient(130deg, #0d1c2aee, #08101bf2);
+  border: 1px solid #00d9ff28;
+  border-left: 2px solid var(--cyan);
+  padding: 8px 9px; min-width: 0;
+}
+.tile.pink { border-color: #ff36ce35; border-left-color: var(--pink); }
+.tile .name {
+  font-size: clamp(7px, 2vw, 11px);
+  letter-spacing: .1em; color: var(--muted);
+}
+.value {
+  font-size: clamp(17px, 5vw, 28px);
+  margin: 4px 0; font-weight: 600;
+}
+.tile.pink .value { color: #ff8ce5; }
+.bar { height: 3px; background: #1a2a37; overflow: hidden; }
+.bar i {
+  display: block; height: 100%; width: 0;
+  background: var(--cyan); box-shadow: 0 0 8px var(--cyan);
+  transition: width .5s;
+}
+.tile.pink .bar i { background: var(--pink); box-shadow: 0 0 8px var(--pink); }
+footer { margin-top: 9px; }
+.coolant { color: var(--cyan); font-weight: 600; }
+#mode { cursor: pointer; }
+@keyframes rotate { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .orbit { animation: none; }
+}
+</style>
+</head>
+<body>
+<main id="screen">
+  <header>
+    <div class="brand">NEON<span>CORE</span></div>
+    <div class="tiny status">◆ <span id="connection">INITIALIZING</span></div>
+  </header>
+
+  <section class="core">
+    <div class="orbit"></div>
+    <div class="orbit two"></div>
+    <div class="center">
+      <div class="eyebrow">CPU / THERMAL</div>
+      <div class="big"><span id="cpuTemp">--</span><span class="unit">°C</span></div>
+      <div class="tiny">CORE TEMPERATURE</div>
+    </div>
+  </section>
+
+  <section class="readings">
+    <div class="tile">
+      <div class="name">CPU LOAD</div>
+      <div class="value"><span id="cpuLoad">--</span><small>%</small></div>
+      <div class="bar"><i id="cpuBar"></i></div>
+    </div>
+    <div class="tile pink">
+      <div class="name">GPU TEMP</div>
+      <div class="value"><span id="gpuTemp">--</span><small>°C</small></div>
+      <div class="bar"><i id="gpuTempBar"></i></div>
+    </div>
+    <div class="tile">
+      <div class="name">MEMORY / RAM</div>
+      <div class="value"><span id="ramLoad">--</span><small>%</small></div>
+      <div class="bar"><i id="ramBar"></i></div>
+    </div>
+    <div class="tile pink">
+      <div class="name">GPU LOAD</div>
+      <div class="value"><span id="gpuLoad">--</span><small>%</small></div>
+      <div class="bar"><i id="gpuBar"></i></div>
+    </div>
+  </section>
+
+  <footer>
+    <div>
+      <div class="tiny">LIQUID TEMP</div>
+      <div class="coolant"><span id="liquidTemp">--</span> °C</div>
+    </div>
+    <div style="text-align:right">
+      <div class="tiny">SYSTEM MONITOR // V1.0</div>
+      <div class="tiny" id="mode">CAM / WEB</div>
+    </div>
+  </footer>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+
+function show(id, value, digits = 0) {
+  $(id).textContent = Number.isFinite(value)
+    ? value.toFixed(digits) : "--";
+}
+
+function bar(id, value) {
+  $(id).style.width = Number.isFinite(value)
+    ? Math.max(0, Math.min(100, value)) + "%" : "0%";
+}
+
+function firstNumber(...values) {
+  return values.find(v => typeof v === "number" && Number.isFinite(v));
+}
+
+// Accommodate the common NZXT monitoring data shapes without
+// assuming every sensor exists on every PC.
+function render(data) {
+  const cpu = data?.cpus?.[0];
+  const gpu = data?.gpus?.[0];
+  const ram = data?.ram;
+  const kraken = data?.kraken;
+
+  const cpuTemperature = firstNumber(
+    cpu?.temperature, cpu?.temp
+  );
+  const cpuUsage = firstNumber(
+    cpu?.utilization, cpu?.load
+  );
+  const gpuTemperature = firstNumber(
+    gpu?.temperature, gpu?.temp
+  );
+  const gpuUsage = firstNumber(
+    gpu?.utilization, gpu?.load
+  );
+  const ramUsage = firstNumber(
+    ram?.utilization, ram?.load
+  );
+  const coolantTemperature = firstNumber(
+    kraken?.liquidTemperature,
+    kraken?.liquid_temperature,
+    kraken?.temperature
+  );
+
+  show("cpuTemp", cpuTemperature);
+  show("cpuLoad", cpuUsage);
+  show("gpuTemp", gpuTemperature);
+  show("gpuLoad", gpuUsage);
+  show("ramLoad", ramUsage);
+  show("liquidTemp", coolantTemperature, 1);
+
+  bar("cpuBar", cpuUsage);
+  bar("gpuBar", gpuUsage);
+  bar("gpuTempBar", Number.isFinite(gpuTemperature)
+    ? gpuTemperature / 100 * 100 : NaN);
+  bar("ramBar", ramUsage);
+
+  $("connection").textContent = "CAM LINK ACTIVE";
+}
+
+// Register the official NZXT CAM monitoring callback.
+// Set nzxt.v1.onMonitoringDataUpdate on the existing namespace.
+window.nzxt = window.nzxt || {};
+window.nzxt.v1 = window.nzxt.v1 || {};
+window.nzxt.v1.onMonitoringDataUpdate = render;
+
+// Standalone browser preview: illustrative values only.
+// Click the mode label to toggle simulation.
+let demo = false;
+let tick = 0;
+let timer;
+
+function demoFrame() {
+  tick++;
+  render({
+    cpus: [{
+      temperature: 48 + Math.sin(tick / 5) * 7,
+      utilization: 24 + Math.sin(tick / 3) * 16
+    }],
+    gpus: [{
+      temperature: 44 + Math.sin(tick / 7) * 8,
+      utilization: 55 + Math.sin(tick / 4) * 20
+    }],
+    ram: { utilization: 62 + Math.sin(tick / 9) * 4 },
+    kraken: { liquidTemperature: 31 + Math.sin(tick / 10) * 1.5 }
+  });
+}
+
+$("mode").addEventListener("click", () => {
+  demo = !demo;
+  clearInterval(timer);
+
+  if (demo) {
+    $("mode").textContent = "DEMO / SIMULATED";
+    $("connection").textContent = "PREVIEW MODE";
+    demoFrame();
+    timer = setInterval(demoFrame, 1000);
+  } else {
+    $("mode").textContent = "CAM / WEB";
+    $("connection").textContent = "WAITING FOR CAM";
+    render({});
+  }
+});
+
+if (window.nzxt?.v1) {
+  $("connection").textContent = "WAITING FOR CAM";
+}
+</script>
+</body>
+</html>
