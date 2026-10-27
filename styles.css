@@ -50,7 +50,7 @@ body {
 .orbit {
   width: 69%; aspect-ratio: 1; border-radius: 50%;
   border: 1px solid #00e5ff50; position: absolute;
-  animation: rotate 22s linear infinite;
+  animation: none;
 }
 .orbit::before, .orbit::after {
   content: ""; position: absolute;
@@ -62,7 +62,6 @@ body {
 .orbit.two {
   width: 81%; border-style: dashed;
   border-color: #ff36ce45;
-  animation-direction: reverse; animation-duration: 35s;
 }
 .orbit.two::before, .orbit.two::after { display: none; }
 .center {
