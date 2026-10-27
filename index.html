@@ -29,6 +29,7 @@ body {
   width: min(100vw, 100vh);
   aspect-ratio: 1;
   position: relative; overflow: hidden;
+  clip-path: circle(48% at 50% 50%);
   padding: 6.5%;
   display: flex; flex-direction: column;
   justify-content: space-between;
@@ -49,23 +50,15 @@ body {
   );
   pointer-events: none;
 }
-header, footer {
-  display: flex; justify-content: space-between;
-  align-items: center; gap: 8px;
-}
-.brand {
-  font-size: clamp(10px, 3.4vw, 20px);
-  font-weight: 900; letter-spacing: .13em;
-}
-.brand span { color: var(--cyan); }
 .tiny {
   color: var(--muted); font-size: clamp(6px, 1.8vw, 10px);
   letter-spacing: .12em;
 }
-.status { color: var(--cyan); }
 .core {
   display: grid; place-items: center;
-  position: relative; flex: 1; min-height: 0;
+  position: absolute;
+  top: 3%; left: 6.5%; right: 6.5%;
+  height: 60%;
 }
 .orbit {
   width: 69%; aspect-ratio: 1; border-radius: 50%;
@@ -94,39 +87,84 @@ header, footer {
   box-shadow: 0 0 25px #00e5ff19, inset 0 0 24px #00e5ff12;
   position: relative;
 }
-.center::before {
-  content: ""; position: absolute; inset: 5%;
-  border: 1px dashed #00f5ff42; border-radius: 50%;
+.clock-face {
+  position: relative;
+  width: 100%; aspect-ratio: 1; border-radius: 50%;
+  border: 1px solid #00e5ff45;
+  box-shadow: 0 0 18px #00e5ff12, inset 0 0 18px #00e5ff0b;
 }
-.eyebrow {
-  color: var(--cyan); font-size: clamp(6px, 1.8vw, 10px);
-  letter-spacing: .17em;
+.clock-tick {
+  position: absolute; top: 4%; left: 50%;
+  width: 1px; height: 7%;
+  background: #00f5ff65;
+  transform: translateX(-50%) rotate(var(--angle));
+  transform-origin: 50% 657%;
 }
-.big {
-  font-size: clamp(24px, 8vw, 48px);
-  line-height: 1.2; font-weight: 300;
+.clock-tick.major {
+  top: 3%; height: 9%; width: 2px;
+  background: var(--cyan); box-shadow: 0 0 6px #00f5ff75;
+  transform-origin: 50% 522%;
 }
-.unit { font-size: .42em; color: var(--cyan); }
+.clock-hand {
+  position: absolute; left: 50%; bottom: 50%;
+  border-radius: 2px; transform: translateX(-50%) rotate(0deg);
+  transform-origin: 50% 100%;
+}
+.clock-hand.hour {
+  width: 3px; height: 22%; background: #e8fbff;
+}
+.clock-hand.minute {
+  width: 2px; height: 31%; background: var(--cyan);
+}
+.clock-hand.second {
+  width: 1px; height: 36%; background: var(--pink);
+  box-shadow: 0 0 5px #ff36ce80;
+}
+.clock-pin {
+  position: absolute; left: 50%; top: 50%;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--pink); box-shadow: 0 0 8px var(--pink);
+  transform: translate(-50%, -50%);
+}
 .readings {
+  position: absolute;
+  left: 14%; right: 14%; bottom: 21%;
   display: grid; grid-template-columns: 1fr 1fr;
-  gap: 7px; margin: 0 1%;
+  gap: 4%; width: auto;
 }
-.tile {
+.processor-block {
   background: linear-gradient(130deg, #0d1c2aee, #08101bf2);
   border: 1px solid #00d9ff28;
   border-left: 2px solid var(--cyan);
-  padding: 8px 9px; min-width: 0;
+  padding: clamp(7px, 1.2vw, 12px);
+  min-width: 0;
 }
-.tile.pink { border-color: #ff36ce35; border-left-color: var(--pink); }
-.tile .name {
+.processor-block.pink { border-color: #ff36ce35; border-left-color: var(--pink); }
+.processor-name {
+  margin-bottom: clamp(6px, 1vw, 10px);
+  font-size: clamp(9px, 2vw, 13px);
+  font-weight: 700;
+  letter-spacing: .14em;
+  color: var(--cyan);
+}
+.processor-block.pink .processor-name { color: #ff8ce5; }
+.metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.metric-name {
   font-size: clamp(7px, 2vw, 11px);
   letter-spacing: .1em; color: var(--muted);
 }
-.value {
-  font-size: clamp(17px, 5vw, 28px);
-  margin: 4px 0; font-weight: 600;
+.metric-value {
+  margin: 3px 0 6px;
+  font-size: clamp(22px, 6vw, 40px);
+  line-height: 1;
+  font-weight: 700;
+  white-space: nowrap;
 }
-.tile.pink .value { color: #ff8ce5; }
+.processor-block.pink .metric-value { color: #ff8ce5; }
 .bar { height: 3px; background: #1a2a37; overflow: hidden; }
 .bar i {
   display: block; height: 100%; width: 0;
@@ -134,9 +172,6 @@ header, footer {
   transition: width .5s;
 }
 .tile.pink .bar i { background: var(--pink); box-shadow: 0 0 8px var(--pink); }
-footer { margin-top: 9px; }
-.coolant { color: var(--cyan); font-weight: 600; }
-#mode { cursor: pointer; }
 @keyframes rotate { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) {
   .orbit { animation: none; }
@@ -145,54 +180,64 @@ footer { margin-top: 9px; }
 </head>
 <body>
 <main id="screen">
-  <header>
-    <div class="brand">NEON<span>CORE</span></div>
-    <div class="tiny status">◆ <span id="connection">INITIALIZING</span></div>
-  </header>
-
   <section class="core">
     <div class="orbit"></div>
     <div class="orbit two"></div>
-    <div class="center">
-      <div class="eyebrow">CPU / THERMAL</div>
-      <div class="big"><span id="cpuTemp">--</span><span class="unit">°C</span></div>
-      <div class="tiny">CORE TEMPERATURE</div>
+    <div class="center" role="img" aria-label="Analog clock">
+      <div class="clock-face">
+        <i class="clock-tick major" style="--angle: 0deg"></i>
+        <i class="clock-tick" style="--angle: 30deg"></i>
+        <i class="clock-tick" style="--angle: 60deg"></i>
+        <i class="clock-tick major" style="--angle: 90deg"></i>
+        <i class="clock-tick" style="--angle: 120deg"></i>
+        <i class="clock-tick" style="--angle: 150deg"></i>
+        <i class="clock-tick major" style="--angle: 180deg"></i>
+        <i class="clock-tick" style="--angle: 210deg"></i>
+        <i class="clock-tick" style="--angle: 240deg"></i>
+        <i class="clock-tick major" style="--angle: 270deg"></i>
+        <i class="clock-tick" style="--angle: 300deg"></i>
+        <i class="clock-tick" style="--angle: 330deg"></i>
+        <i class="clock-hand hour" id="hourHand"></i>
+        <i class="clock-hand minute" id="minuteHand"></i>
+        <i class="clock-hand second" id="secondHand"></i>
+        <i class="clock-pin"></i>
+      </div>
     </div>
   </section>
 
   <section class="readings">
-    <div class="tile">
-      <div class="name">CPU LOAD</div>
-      <div class="value"><span id="cpuLoad">--</span><small>%</small></div>
-      <div class="bar"><i id="cpuBar"></i></div>
+    <div class="processor-block">
+      <div class="processor-name">CPU</div>
+      <div class="metrics">
+        <div>
+          <div class="metric-name">LOAD</div>
+          <div class="metric-value"><span id="cpuLoad">--</span><small>%</small></div>
+          <div class="bar"><i id="cpuBar"></i></div>
+        </div>
+        <div>
+          <div class="metric-name">TEMP</div>
+          <div class="metric-value"><span id="cpuTemp">--</span><small>°C</small></div>
+          <div class="bar"><i id="cpuTempBar"></i></div>
+        </div>
+      </div>
     </div>
-    <div class="tile pink">
-      <div class="name">GPU TEMP</div>
-      <div class="value"><span id="gpuTemp">--</span><small>°C</small></div>
-      <div class="bar"><i id="gpuTempBar"></i></div>
-    </div>
-    <div class="tile">
-      <div class="name">MEMORY / RAM</div>
-      <div class="value"><span id="ramLoad">--</span><small>%</small></div>
-      <div class="bar"><i id="ramBar"></i></div>
-    </div>
-    <div class="tile pink">
-      <div class="name">GPU LOAD</div>
-      <div class="value"><span id="gpuLoad">--</span><small>%</small></div>
-      <div class="bar"><i id="gpuBar"></i></div>
+    <div class="processor-block pink">
+      <div class="processor-name">GPU</div>
+      <div class="metrics">
+        <div>
+          <div class="metric-name">LOAD</div>
+          <div class="metric-value"><span id="gpuLoad">--</span><small>%</small></div>
+          <div class="bar"><i id="gpuBar"></i></div>
+        </div>
+        <div>
+          <div class="metric-name">TEMP</div>
+          <div class="metric-value"><span id="gpuTemp">--</span><small>°C</small></div>
+          <div class="bar"><i id="gpuTempBar"></i></div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <footer>
-    <div>
-      <div class="tiny">LIQUID TEMP</div>
-      <div class="coolant"><span id="liquidTemp">--</span> °C</div>
-    </div>
-    <div style="text-align:right">
-      <div class="tiny">SYSTEM MONITOR // V1.0</div>
-      <div class="tiny" id="mode">CAM / WEB</div>
-    </div>
-  </footer>
 </main>
 
 <script>
@@ -222,8 +267,6 @@ function loadPercent(load, utilization) {
 function render(data) {
   const cpu = data?.cpus?.[0];
   const gpu = data?.gpus?.[0];
-  const ram = data?.ram;
-  const kraken = data?.kraken;
 
   const cpuTemperature = firstNumber(
     cpu?.temperature, cpu?.temp
@@ -233,29 +276,16 @@ function render(data) {
     gpu?.temperature, gpu?.temp
   );
   const gpuUsage = loadPercent(gpu?.load, gpu?.utilization);
-  const ramUsage = firstNumber(
-    ram?.utilization, ram?.load
-  );
-  const coolantTemperature = firstNumber(
-    kraken?.liquidTemperature,
-    kraken?.liquid_temperature,
-    kraken?.temperature
-  );
-
   show("cpuTemp", cpuTemperature);
   show("cpuLoad", cpuUsage);
   show("gpuTemp", gpuTemperature);
   show("gpuLoad", gpuUsage);
-  show("ramLoad", ramUsage);
-  show("liquidTemp", coolantTemperature, 1);
 
   bar("cpuBar", cpuUsage);
   bar("gpuBar", gpuUsage);
+  bar("cpuTempBar", cpuTemperature);
   bar("gpuTempBar", Number.isFinite(gpuTemperature)
-    ? gpuTemperature / 100 * 100 : NaN);
-  bar("ramBar", ramUsage);
-
-  $("connection").textContent = "CAM LINK ACTIVE";
+    ? gpuTemperature : NaN);
 }
 
 // Register the official NZXT CAM monitoring callback.
@@ -264,47 +294,19 @@ window.nzxt = window.nzxt || {};
 window.nzxt.v1 = window.nzxt.v1 || {};
 window.nzxt.v1.onMonitoringDataUpdate = render;
 
-// Standalone browser preview: illustrative values only.
-// Click the mode label to toggle simulation.
-let demo = false;
-let tick = 0;
-let timer;
+function updateClock() {
+  const now = new Date();
+  const seconds = now.getSeconds();
+  const minutes = now.getMinutes() + seconds / 60;
+  const hours = (now.getHours() % 12) + minutes / 60;
 
-function demoFrame() {
-  tick++;
-  render({
-    cpus: [{
-      temperature: 48 + Math.sin(tick / 5) * 7,
-      load: 0.24 + Math.sin(tick / 3) * 0.16
-    }],
-    gpus: [{
-      temperature: 44 + Math.sin(tick / 7) * 8,
-      load: 0.55 + Math.sin(tick / 4) * 0.2
-    }],
-    ram: { utilization: 62 + Math.sin(tick / 9) * 4 },
-    kraken: { liquidTemperature: 31 + Math.sin(tick / 10) * 1.5 }
-  });
+  $("hourHand").style.transform = `translateX(-50%) rotate(${hours * 30}deg)`;
+  $("minuteHand").style.transform = `translateX(-50%) rotate(${minutes * 6}deg)`;
+  $("secondHand").style.transform = `translateX(-50%) rotate(${seconds * 6}deg)`;
 }
 
-$("mode").addEventListener("click", () => {
-  demo = !demo;
-  clearInterval(timer);
-
-  if (demo) {
-    $("mode").textContent = "DEMO / SIMULATED";
-    $("connection").textContent = "PREVIEW MODE";
-    demoFrame();
-    timer = setInterval(demoFrame, 1000);
-  } else {
-    $("mode").textContent = "CAM / WEB";
-    $("connection").textContent = "WAITING FOR CAM";
-    render({});
-  }
-});
-
-if (window.nzxt?.v1) {
-  $("connection").textContent = "WAITING FOR CAM";
-}
+updateClock();
+setInterval(updateClock, 1000);
 </script>
 </body>
 </html>
